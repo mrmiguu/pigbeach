@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 
-import * as Logic from './logic.ts'
 import { useDie } from './Die.tsx'
 import { clickSound } from './audio.ts'
+import * as Logic from './logic.ts'
 
 const generateDiceRollModal = (dice: [Logic.Die]) => {
   function DiceRollModal() {
@@ -40,15 +40,20 @@ const generateDiceRollModal = (dice: [Logic.Die]) => {
         }`}
         onClick={() => {
           clickSound.play()
-
-          if (rolled1) {
-          }
-          Die1.roll()
+          hide(true)
         }}
       >
         <div className="absolute w-full h-full bg-black/50 pointer-events-none" />
 
-        <Die1 which={1} faces={dice[0]} onRollEnd={() => setRolled1(true)} />
+        <div
+          onClick={e => {
+            e.stopPropagation()
+            clickSound.play()
+            Die1.roll()
+          }}
+        >
+          <Die1 which={1} faces={dice[0]} onRollEnd={() => setRolled1(true)} />
+        </div>
       </div>
     )
   }

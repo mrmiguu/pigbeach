@@ -6,9 +6,9 @@ import DieFace from './DieFace.tsx'
 import { GameStateContext } from './GameState.context.tsx'
 import * as Logic from './logic.ts'
 
-const randomSymmetryWithTilt = (offset: number, onlyTilt?: boolean) => {
-  const symmetricalRotation = onlyTilt ? 0 : 4 * ((Math.floor(3 * Math.random()) + 3) * (offset + 1))
-  const randomTilt = symmetricalRotation + (Math.random() - 0.5) * 0.5
+const randomMultiRotationWithTilt = (offset: number, onlyTilt?: boolean) => {
+  const multiRotation = onlyTilt ? 0 : 4 * ((Math.floor(3 * Math.random()) + 3) * (offset + 1))
+  const randomTilt = multiRotation + (Math.random() - 0.5) * 0.5
   return randomTilt
 }
 
@@ -60,6 +60,10 @@ function DieFaceTranslated({ faceNum, face, radiusPx, rollDone, rolledNum }: Die
   )
 }
 
+const useMultiRotateWithTilt = (rotate: number, tiltOffset: number, onlyTilt: boolean) => {
+  return useMemo(() => rotate + randomMultiRotationWithTilt(tiltOffset, onlyTilt), [rotate, tiltOffset, onlyTilt])
+}
+
 type DieProps = {
   which: Logic.WhichDie
   faces: [Logic.DieFace, Logic.DieFace, Logic.DieFace, Logic.DieFace, Logic.DieFace, Logic.DieFace]
@@ -83,9 +87,9 @@ const generateDie = () => {
 
     const [tiltOffset, setTiltOffset] = useState(0)
     const [minRotateX, minRotateY, minRotateZ] = rolledNum ? dieRotationByFaceNum[rolledNum] : [0, 0, 0]
-    const rotateX = useMemo(() => minRotateX + randomSymmetryWithTilt(tiltOffset, !rolledNum), [minRotateX, tiltOffset, rolledNum])
-    const rotateY = useMemo(() => minRotateY + randomSymmetryWithTilt(tiltOffset, !rolledNum), [minRotateY, tiltOffset, rolledNum])
-    const rotateZ = useMemo(() => minRotateZ + randomSymmetryWithTilt(tiltOffset, !rolledNum), [minRotateZ, tiltOffset, rolledNum])
+    const rotateX = useMultiRotateWithTilt(minRotateX, tiltOffset, !rolledNum)
+    const rotateY = useMultiRotateWithTilt(minRotateY, tiltOffset, !rolledNum)
+    const rotateZ = useMultiRotateWithTilt(minRotateZ, tiltOffset, !rolledNum)
     const rotateXDeg = rotateX * 90
     const rotateYDeg = rotateY * 90
     const rotateZDeg = rotateZ * 90
@@ -101,7 +105,7 @@ const generateDie = () => {
         } else {
           dieRollSound.play()
         }
-        
+
         setDieResting(false)
         setTiltOffset(off => off + 1)
 

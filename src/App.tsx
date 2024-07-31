@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from 'react'
 
 import { DIE_ROLL_DURATION_MS, WAIT_AFTER_FIRST_PLAYER_DECIDED } from './animations.consts.ts'
-import { clickSound } from './audio.ts'
+import { aboveTheTreetopsSound, clickSound } from './audio.ts'
 import { useDiceRollModal } from './DiceRollModal.tsx'
 import { GameStateContext } from './GameState.context.tsx'
 import { useElectState } from './hooks.ts'
@@ -10,6 +10,7 @@ import { sleep } from './utils.ts'
 
 import dieIconImage from './assets/die-icon.png'
 import pigBeachBgImage from './assets/pig-beach-bg.png'
+import { usePlayMusic } from './Music.hooks.ts'
 
 function RollToDecideWhoGoesFirstScreen() {
   const { game, yourPlayerId } = useContext(GameStateContext)
@@ -79,6 +80,7 @@ function RollToDecideWhoGoesFirstScreen() {
 }
 
 function App() {
+  usePlayMusic(aboveTheTreetopsSound)
   const { game, yourPlayerId } = useContext(GameStateContext)
   const { whoseTurn: whoseTurnElect } = game
 

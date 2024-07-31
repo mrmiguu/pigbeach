@@ -2,6 +2,7 @@ import { Howl } from 'howler'
 
 import diceRollSoundAudio from './assets/dice-roll.wav'
 import dieRollSoundAudio from './assets/die-roll.wav'
+import aboveTheTreetopsSoundAudio from './assets/maple-above-the-treetops.mp3'
 import buySoundAudio from './assets/maple-buy.mp3'
 import clickSoundAudio from './assets/maple-click.mp3'
 import downSoundAudio from './assets/maple-down.mp3'
@@ -15,3 +16,4 @@ export const dieRollSound = new Howl({ src: dieRollSoundAudio })
 export const hoverSound = new Howl({ src: hoverSoundAudio })
 export const downSound = new Howl({ src: downSoundAudio })
 export const upSound = new Howl({ src: upSoundAudio })
+export const aboveTheTreetopsSound = new Howl({ src: aboveTheTreetopsSoundAudio })

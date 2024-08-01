@@ -141,6 +141,7 @@ Dusk.initLogic({
 
       if (!game.whoseTurn) {
         game.whoseTurn = playerId
+        game.gameStartedAt = gameTime()
       }
     },
 

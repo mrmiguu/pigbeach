@@ -1,12 +1,9 @@
-import { useContext, useEffect, useState } from 'react'
+import { useContext } from 'react'
 
-import { DIE_ROLL_DURATION_MS, WAIT_AFTER_FIRST_PLAYER_DECIDED } from './animations.consts.ts'
 import { aboveTheTreetopsSound, clickSound, levelUpSound } from './audio.ts'
 import { useDiceRollModal } from './DiceRollModal.tsx'
 import { GameStateContext } from './GameState.context.tsx'
-import { useElectState } from './hooks.ts'
 import * as Logic from './logic.ts'
-import { sleep } from './utils.ts'
 
 import dieIconImage from './assets/die-icon.png'
 import pigBeachBgImage from './assets/pig-beach-bg.png'
@@ -14,31 +11,14 @@ import { usePlayMusic } from './Music.hooks.ts'
 
 function RollToDecideWhoGoesFirstScreen() {
   const { game, yourPlayerId } = useContext(GameStateContext)
-  const player = game.playerStateById[yourPlayerId]!
+  const player = game.players[yourPlayerId]!
 
   const totalOnline = Logic.totalOnline(game)
 
   const MyDiceRollModal = useDiceRollModal(Logic.StartingDice)
 
-  const myDecidingRollElect = Logic.decidedRollSum(game, yourPlayerId)
-  const myDecidingRoll = useElectState(myDecidingRollElect, DIE_ROLL_DURATION_MS)
-  const firstPlayerElect = Logic.findFirstPlayer(game)
-  const firstPlayer = useElectState(firstPlayerElect, DIE_ROLL_DURATION_MS)
-
-  const [countdown, setCountdown] = useState<number>()
-  useEffect(() => {
-    if (!firstPlayer) {
-      return
-    }
-
-    const go = async () => {
-      for (let i = Math.floor(WAIT_AFTER_FIRST_PLAYER_DECIDED / 1000); i >= 1; i--) {
-        setCountdown(i)
-        await sleep(1000)
-      }
-    }
-    go()
-  }, [firstPlayer])
+  const decidingRoll = !game.whoseTurn
+  const myTurn = game.whoseTurn === yourPlayerId
 
   return (
     <div className="absolute w-full h-full flex flex-col">
@@ -47,35 +27,37 @@ function RollToDecideWhoGoesFirstScreen() {
         style={{ backgroundImage: `url('${pigBeachBgImage}')` }}
       />
 
-      <div className="relative w-full h-full flex flex-col gap-4 justify-start items-center p-4">
-        <div className="relative h-full flex flex-col gap-2 justify-end items-center">
-          <div className="w-full h-full max-w-48 max-h-48 p-4 bg-rose-500/20 backdrop-blur rounded flex flex-col justify-center items-center">
-            <div className="text-amber-50 text-6xl font-bold text-center font-damage uppercase">
-              {!myDecidingRoll && <>Roll!</>}
-              {myDecidingRoll && !firstPlayer && <>{myDecidingRoll}</>}
-              {countdown && <>{countdown}</>}
-            </div>
-            <div className="text-amber-50 text-xs text-center">
-              {!myDecidingRoll && <>Decide who goes first</>}
-              {myDecidingRoll && !firstPlayer && <>Waiting for other players</>}
-              {countdown && <>Starting game in...</>}
-            </div>
+      <div className="relative w-full h-full flex flex-col justify-start items-center gap-4 p-4">
+        <div className="p-8 bg-rose-500/20 backdrop-blur rounded flex flex-col justify-center items-center">
+          <div className="text-amber-50 text-6xl font-bold text-center font-damage uppercase">
+            {(decidingRoll || myTurn) && <>Roll!</>}
+            {!decidingRoll && !myTurn && <>Wait</>}
           </div>
+          <div className="text-amber-50 text-xs text-center">
+            {decidingRoll && <>The first to roll goes first</>}
+            {myTurn && <>It's your turn</>}
+            {!decidingRoll && !myTurn && <>It's another player's turn</>}
+          </div>
+        </div>
 
-          <div className="h-full flex items-center">
-            <button
-              onClick={async () => {
-                clickSound.play()
-                const rolls = await MyDiceRollModal.waitForRoll()
-                const score = rolls.reduce((a, b) => a + b, 0)
-                if (score) {
-                  levelUpSound.play()
-                }
-              }}
-            >
-              <img src={dieIconImage} className={`w-20 ${myDecidingRoll ? 'animate-spin' : 'animate-bounce'}`} />
-            </button>
-          </div>
+        <div className="grow h-full flex items-center">
+          <button
+            className={`${!decidingRoll && !myTurn && 'pointer-events-none'}`}
+            onClick={async () => {
+              clickSound.play()
+              const rolls = await MyDiceRollModal.waitForRoll()
+              const score = rolls.reduce((a, b) => a + b, 0)
+              if (score) {
+                levelUpSound.play()
+              }
+              Logic.actions.endTurn()
+            }}
+          >
+            <img
+              src={dieIconImage}
+              className={`w-20 ${!decidingRoll && !myTurn ? 'animate-spin' : 'animate-bounce'}`}
+            />
+          </button>
         </div>
       </div>
 
@@ -115,17 +97,17 @@ function RollToDecideWhoGoesFirstScreen() {
 
 function App() {
   usePlayMusic(aboveTheTreetopsSound)
-  const { game, yourPlayerId } = useContext(GameStateContext)
-  const { whoseTurn: whoseTurnElect } = game
+  // const { game, yourPlayerId } = useContext(GameStateContext)
+  // const { whoseTurn: whoseTurnElect } = game
 
-  const whoseTurn = useElectState(whoseTurnElect, DIE_ROLL_DURATION_MS + WAIT_AFTER_FIRST_PLAYER_DECIDED)
+  // const whoseTurn = useElectState(whoseTurnElect, DIE_ROLL_DURATION_MS + WAIT_AFTER_FIRST_PLAYER_DECIDED)
 
-  useEffect(() => {
-    if (whoseTurnElect && whoseTurn === yourPlayerId) {
-      Logic.actions.startGame()
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [whoseTurnElect, whoseTurn])
+  // useEffect(() => {
+  //   if (whoseTurnElect && whoseTurn === yourPlayerId) {
+  //     Logic.actions.startGame()
+  //   }
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [whoseTurnElect, whoseTurn])
 
   return <RollToDecideWhoGoesFirstScreen />
 }

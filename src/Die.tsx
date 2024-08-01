@@ -38,10 +38,10 @@ type DieFaceProps = {
   face: Logic.DieFace
   radiusPx: number
   rollDone: boolean
-  rolledNum?: Logic.DieFaceNum
+  roll?: Logic.DieFaceNum
 }
 
-function DieFaceTranslated({ faceNum, face, radiusPx, rollDone, rolledNum }: DieFaceProps) {
+function DieFaceTranslated({ faceNum, face, radiusPx, rollDone, roll }: DieFaceProps) {
   const textScale = 4.5
 
   return (
@@ -51,7 +51,7 @@ function DieFaceTranslated({ faceNum, face, radiusPx, rollDone, rolledNum }: Die
     >
       <div
         className={`h-full aspect-square bg-gradient-to-br from-red-500 to-red-700 rounded-3xl p-3 border border-black transition-all ${
-          rollDone && rolledNum !== faceNum && 'duration-700 brightness-50'
+          rollDone && roll !== faceNum && 'duration-700 brightness-50'
         }`}
       >
         <DieFace {...face} textScale={textScale} />
@@ -65,19 +65,23 @@ const useMultiRotateWithTilt = (rotate: number, tiltOffset: number, onlyTilt: bo
 }
 
 type DieProps = {
-  which: Logic.WhichDie
   faces: [Logic.DieFace, Logic.DieFace, Logic.DieFace, Logic.DieFace, Logic.DieFace, Logic.DieFace]
-  onRollEnd: (rolledNum: Logic.DieFaceNum) => void
+  onRollEnd: (roll: Logic.DieFaceNum) => void
 }
 
 const generateDie = () => {
-  function Die({ which, faces, onRollEnd }: DieProps) {
+  function Die({ faces, onRollEnd }: DieProps) {
     const {
-      game: { playerStateById },
+      game: { players },
       yourPlayerId,
     } = useContext(GameStateContext)
-    const { rolledNums } = playerStateById[yourPlayerId]!
-    const rolledNum = rolledNums[which - 1]
+    const { rollBuffer } = players[yourPlayerId]!
+
+    const [rollIndex, setRollIndex] = useState(rollBuffer?.length ?? 0)
+    const resetRollIndex = () => {
+      setRollIndex(rollBuffer?.length ?? 0)
+    }
+    const roll = rollBuffer ? rollBuffer[rollIndex] ?? 1 : undefined
 
     const [face1, face2, face3, face4, face5, face6] = faces
     const dieSizePx = 150
@@ -86,16 +90,16 @@ const generateDie = () => {
     const [dieResting, setDieResting] = useState(true)
 
     const [tiltOffset, setTiltOffset] = useState(0)
-    const [minRotateX, minRotateY, minRotateZ] = rolledNum ? dieRotationByFaceNum[rolledNum] : [0, 0, 0]
-    const rotateX = useMultiRotateWithTilt(minRotateX, tiltOffset, !rolledNum)
-    const rotateY = useMultiRotateWithTilt(minRotateY, tiltOffset, !rolledNum)
-    const rotateZ = useMultiRotateWithTilt(minRotateZ, tiltOffset, !rolledNum)
+    const [minRotateX, minRotateY, minRotateZ] = roll ? dieRotationByFaceNum[roll] : [0, 0, 0]
+    const rotateX = useMultiRotateWithTilt(minRotateX, tiltOffset, !roll)
+    const rotateY = useMultiRotateWithTilt(minRotateY, tiltOffset, !roll)
+    const rotateZ = useMultiRotateWithTilt(minRotateZ, tiltOffset, !roll)
     const rotateXDeg = rotateX * 90
     const rotateYDeg = rotateY * 90
     const rotateZDeg = rotateZ * 90
 
-    const dieFace = rolledNum ? faces[Number(rolledNum) - 1] : undefined
-    const rollDone = !!(dieResting && rolledNum)
+    // const dieFace = roll ? faces[Number(roll) - 1] : undefined
+    const rollDone = !!(dieResting && roll)
     const animationPlayState = rollDone ? 'paused' : 'running'
 
     Die.roll = (...otherDice: (typeof Die)[]) => {
@@ -106,10 +110,11 @@ const generateDie = () => {
           dieRollSound.play()
         }
 
+        resetRollIndex()
         setDieResting(false)
         setTiltOffset(off => off + 1)
 
-        Logic.actions.rollDie({ which })
+        Logic.actions.rollDie()
       }
 
       for (const die of otherDice) {
@@ -129,22 +134,23 @@ const generateDie = () => {
             transitionDuration: `${DIE_ROLL_DURATION_MS}ms`,
           }}
           onTransitionEnd={e => {
-            if (!dieFace) {
-              throw new Error('Die not rolled')
-            }
-
-            if (e.propertyName === 'transform') {
+            rollBuffer
+            rollIndex
+            if (e.propertyName === 'transform' && !dieResting) {
+              if (!roll) {
+                throw new Error('Die not rolled')
+              }
               setDieResting(true)
-              onRollEnd(rolledNum!)
+              onRollEnd(roll)
             }
           }}
         >
-          <DieFaceTranslated faceNum={1} face={face1} radiusPx={radiusPx} rollDone={rollDone} rolledNum={rolledNum} />
-          <DieFaceTranslated faceNum={2} face={face2} radiusPx={radiusPx} rollDone={rollDone} rolledNum={rolledNum} />
-          <DieFaceTranslated faceNum={3} face={face3} radiusPx={radiusPx} rollDone={rollDone} rolledNum={rolledNum} />
-          <DieFaceTranslated faceNum={4} face={face4} radiusPx={radiusPx} rollDone={rollDone} rolledNum={rolledNum} />
-          <DieFaceTranslated faceNum={5} face={face5} radiusPx={radiusPx} rollDone={rollDone} rolledNum={rolledNum} />
-          <DieFaceTranslated faceNum={6} face={face6} radiusPx={radiusPx} rollDone={rollDone} rolledNum={rolledNum} />
+          <DieFaceTranslated faceNum={1} face={face1} radiusPx={radiusPx} rollDone={rollDone} roll={roll} />
+          <DieFaceTranslated faceNum={2} face={face2} radiusPx={radiusPx} rollDone={rollDone} roll={roll} />
+          <DieFaceTranslated faceNum={3} face={face3} radiusPx={radiusPx} rollDone={rollDone} roll={roll} />
+          <DieFaceTranslated faceNum={4} face={face4} radiusPx={radiusPx} rollDone={rollDone} roll={roll} />
+          <DieFaceTranslated faceNum={5} face={face5} radiusPx={radiusPx} rollDone={rollDone} roll={roll} />
+          <DieFaceTranslated faceNum={6} face={face6} radiusPx={radiusPx} rollDone={rollDone} roll={roll} />
         </div>
       </div>
     )

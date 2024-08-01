@@ -96,7 +96,7 @@ const generateDiceRollModal = (dice: [Logic.Die]) => {
             }
           }}
         >
-          <Die1 which={1} faces={dice[0]} onRollEnd={appendRolledNum} />
+          <Die1 faces={dice[0]} onRollEnd={appendRolledNum} />
         </div>
       </div>
     )

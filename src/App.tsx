@@ -14,6 +14,8 @@ import { usePlayMusic } from './Music.hooks.ts'
 
 function RollToDecideWhoGoesFirstScreen() {
   const { game, yourPlayerId } = useContext(GameStateContext)
+  const player = game.playerStateById[yourPlayerId]!
+
   const totalOnline = Logic.totalOnline(game)
 
   const MyDiceRollModal = useDiceRollModal(Logic.StartingDice)
@@ -38,45 +40,70 @@ function RollToDecideWhoGoesFirstScreen() {
     go()
   }, [firstPlayer])
 
-  useEffect(() => {}, [countdown])
-
   return (
-    <div
-      className="absolute w-full h-full flex flex-col gap-4 justify-start items-center bg-cover bg-center p-3"
-      style={{ backgroundImage: `url('${pigBeachBgImage}')` }}
-    >
-      <div className="relative flex flex-col gap-2 justify-end items-center h-1/2">
-        <div className="w-full h-full max-w-48 max-h-48 p-4 bg-rose-500/20 backdrop-blur rounded flex flex-col justify-center items-center">
-          <div className="text-amber-50 text-6xl font-bold text-center font-damage uppercase">
-            {!myDecidingRoll && <>Roll!</>}
-            {myDecidingRoll && !firstPlayer && <>{myDecidingRoll}</>}
-            {countdown && <>{countdown}</>}
-          </div>
-          <div className="text-amber-50 text-xs text-center">
-            {!myDecidingRoll && <>Decide who goes first</>}
-            {myDecidingRoll && !firstPlayer && <>Waiting for other players</>}
-            {countdown && <>Starting game in...</>}
-          </div>
-        </div>
+    <div className="absolute w-full h-full flex flex-col">
+      <div
+        className="absolute w-full h-full bg-cover bg-center"
+        style={{ backgroundImage: `url('${pigBeachBgImage}')` }}
+      />
 
-        <div className="grow h-full flex items-end">
-          <button
-            onClick={async () => {
-              clickSound.play()
-              const rolls = await MyDiceRollModal.waitForRoll()
-              const score = rolls.reduce((a, b) => a + b, 0)
-              if (score) {
-                levelUpSound.play()
-              }
-            }}
-          >
-            <img src={dieIconImage} className={`w-20 ${myDecidingRoll ? 'animate-spin' : 'animate-bounce'}`} />
-          </button>
+      <div className="relative w-full h-full flex flex-col gap-4 justify-start items-center p-4">
+        <div className="relative h-full flex flex-col gap-2 justify-end items-center">
+          <div className="w-full h-full max-w-48 max-h-48 p-4 bg-rose-500/20 backdrop-blur rounded flex flex-col justify-center items-center">
+            <div className="text-amber-50 text-6xl font-bold text-center font-damage uppercase">
+              {!myDecidingRoll && <>Roll!</>}
+              {myDecidingRoll && !firstPlayer && <>{myDecidingRoll}</>}
+              {countdown && <>{countdown}</>}
+            </div>
+            <div className="text-amber-50 text-xs text-center">
+              {!myDecidingRoll && <>Decide who goes first</>}
+              {myDecidingRoll && !firstPlayer && <>Waiting for other players</>}
+              {countdown && <>Starting game in...</>}
+            </div>
+          </div>
+
+          <div className="h-full flex items-center">
+            <button
+              onClick={async () => {
+                clickSound.play()
+                const rolls = await MyDiceRollModal.waitForRoll()
+                const score = rolls.reduce((a, b) => a + b, 0)
+                if (score) {
+                  levelUpSound.play()
+                }
+              }}
+            >
+              <img src={dieIconImage} className={`w-20 ${myDecidingRoll ? 'animate-spin' : 'animate-bounce'}`} />
+            </button>
+          </div>
         </div>
       </div>
 
-      <div className="absolute w-full h-full left-0 top-0 flex justify-end items-end p-4 pointer-events-none">
-        <div className="px-3 rounded bg-white/20 backdrop-blur flex items-center gap-2 text-white">
+      <div
+        // UI footer
+        className="outline pointer-events-none flex justify-between p-4 h-20"
+      >
+        <div
+          // Player level
+          className="px-3 rounded bg-black/20 backdrop-blur flex items-center gap-2 text-white"
+        >
+          <div className="font-bold">LV.</div>
+          <div className="rounded flex justify-start items-center gap-0.5">
+            {player.level
+              .toString()
+              .split('')
+              .map((char, i) => (
+                <div key={i} className="font-mono font-bold text-white px-1 bg-orange-500 rounded">
+                  {char}
+                </div>
+              ))}
+          </div>
+        </div>
+
+        <div
+          // Online count
+          className="px-3 rounded bg-white/20 backdrop-blur flex items-center gap-2 text-white"
+        >
           <span className="font-damage text-3xl uppercase">{totalOnline}</span> <span className="text-xs">Online</span>
         </div>
       </div>

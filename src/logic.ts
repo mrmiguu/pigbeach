@@ -1,26 +1,5 @@
 import type { DuskClient, PlayerId as DuskPlayerId } from 'dusk-games-sdk/multiplayer'
-import {
-  L1,
-  L3,
-  L4,
-  M1,
-  M2,
-  M2aW1,
-  M3,
-  M3oL2,
-  M4,
-  M5,
-  M6,
-  MWoP1,
-  MWoP2,
-  MWPaL1,
-  P1,
-  P2,
-  PaL1,
-  W1,
-  W2,
-  WaL2,
-} from './logic.dice'
+import { M1, M2, M3, M4, M5, M6, P1, W1 } from './logic.dice'
 
 export type PlayerId = DuskPlayerId
 
@@ -98,7 +77,9 @@ export const totalOnline = (game: GameState): number => {
 }
 
 export const playerOrder = (game: GameState): PlayerId[] => {
-  const order = Object.entries(game.decidedRollSumByPlayerId).sort(([, a], [, b]) => b - a).map(([id]) => id)
+  const order = Object.entries(game.decidedRollSumByPlayerId)
+    .sort(([, a], [, b]) => b - a)
+    .map(([id]) => id)
   return order
 }
 
@@ -133,9 +114,7 @@ export const decidedRollSum = (game: GameState, playerId: PlayerId) => {
 const getDefaultPlayerState = (id: PlayerId): PlayerState => {
   return {
     id,
-    dice: [
-      [M1, M1, M1, M1, W1, P1],
-    ],
+    dice: [[M1, M1, M1, M1, W1, P1]],
     rolledNums: [undefined],
     viewing: 'worldMap',
     showDiceRoll: false,
@@ -154,11 +133,7 @@ const checkDecidedFirstPlayer = (game: GameState) => {
   }
 }
 
-const checkToCalculateDecidedRollSum = (
-  game: GameState,
-  playerId: PlayerId,
-  rolledNums: [DieFaceNum | undefined],
-) => {
+const checkToCalculateDecidedRollSum = (game: GameState, playerId: PlayerId, rolledNums: [DieFaceNum | undefined]) => {
   const rolled1 = rolledNums[0]
 
   if (rolled1 && !(playerId in game.decidedRollSumByPlayerId)) {

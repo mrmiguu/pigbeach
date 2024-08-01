@@ -1,4 +1,5 @@
 import type { DuskClient, PlayerId as DuskPlayerId } from 'dusk-games-sdk/multiplayer'
+import { loseSound, winSound } from './audio'
 import { M1, M2, M3, M4, M5, M6 } from './logic.dice'
 
 export type PlayerId = DuskPlayerId
@@ -51,7 +52,7 @@ declare global {
   const Dusk: DuskClient<GameState, GameActions>
 }
 
-const WIN_LEVEL = 120
+const WIN_LEVEL = 2
 
 const StartingDie: Die = [M1, M2, M3, M4, M5, M6]
 export const StartingDice: [Die] = [StartingDie]
@@ -151,15 +152,22 @@ Dusk.initLogic({
       }
     },
 
-    endTurn(_, { game, playerId, allPlayerIds }) {
+    endTurn(_, { game, playerId }) {
       checkLevelUp(game, playerId)
       wipeRollBuffer(game, playerId)
 
       if (isGameOver(game)) {
+        const playersDescByLevel = Object.values(game.players).sort((a, b) => (a.level < b.level ? 1 : -1))
+
+        const winner = playersDescByLevel[0]!
+        if (winner.id === playerId) {
+          winSound.play()
+        } else {
+          loseSound.play()
+        }
+
         Dusk.gameOver({
-          players: Object.fromEntries(
-            allPlayerIds.map(id => [id, game.players[id]!.level]).sort((a, b) => (a[1]! < b[1]! ? 1 : -1)),
-          ),
+          players: Object.fromEntries(playersDescByLevel.map(p => [p.id, p.level])),
         })
       } else {
         nextTurn(game)

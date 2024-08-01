@@ -42,17 +42,11 @@ function RollToDecideWhoGoesFirstScreen() {
 
   return (
     <div
-      className="absolute w-full h-full flex flex-col gap-4 justify-center items-center bg-cover bg-center p-3"
-      style={{ backgroundImage: `url(${pigBeachBgImage})` }}
+      className="absolute w-full h-full flex flex-col gap-4 justify-start items-center bg-cover bg-center p-3"
+      style={{ backgroundImage: `url('${pigBeachBgImage}')` }}
     >
-      <button
-        className="w-full h-full max-w-48 max-h-48 p-4 bg-gradient-to-t from-amber-700 to-amber-600 rounded shadow-2xl outline outline-8 outline-amber-800 flex flex-col gap-2 justify-center items-center"
-        onClick={async () => {
-          clickSound.play()
-          await MyDiceRollModal.waitForRoll()
-        }}
-      >
-        <div className="flex flex-col justify-center items-center">
+      <div className="relative flex flex-col gap-2 justify-end items-center h-1/2">
+        <div className="w-full h-full max-w-48 max-h-48 p-4 bg-rose-500/20 backdrop-blur rounded flex flex-col justify-center items-center">
           <div className="text-amber-50 text-6xl font-bold text-center font-damage uppercase">
             {!myDecidingRoll && <>Roll!</>}
             {myDecidingRoll && !firstPlayer && <>{myDecidingRoll}</>}
@@ -65,8 +59,17 @@ function RollToDecideWhoGoesFirstScreen() {
           </div>
         </div>
 
-        <img src={dieIconImage} className={`w-20 ${myDecidingRoll ? 'animate-spin' : 'animate-bounce'}`} />
-      </button>
+        <div className="grow h-full flex items-end">
+          <button
+            onClick={async () => {
+              clickSound.play()
+              await MyDiceRollModal.waitForRoll()
+            }}
+          >
+            <img src={dieIconImage} className={`w-20 ${myDecidingRoll ? 'animate-spin' : 'animate-bounce'}`} />
+          </button>
+        </div>
+      </div>
 
       <div className="absolute w-full h-full left-0 top-0 flex justify-end items-end p-4 pointer-events-none">
         <div className="px-3 rounded bg-white/20 backdrop-blur flex items-center gap-2 text-white">

@@ -35,7 +35,7 @@ const generateDiceRollModal = (dice: [Logic.Die]) => {
 
     return (
       <div
-        className={`fixed z-50 w-full h-full flex flex-col gap-20 justify-center items-center transition-all cursor-pointer ${
+        className={`fixed left-0 top-0 z-50 w-full h-full flex flex-col gap-20 justify-center items-center transition-all cursor-pointer ${
           hidden && 'opacity-0 pointer-events-none'
         }`}
         onClick={() => {

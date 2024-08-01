@@ -157,7 +157,9 @@ Dusk.initLogic({
 
       if (isGameOver(game)) {
         Dusk.gameOver({
-          players: Object.fromEntries(allPlayerIds.map(id => [id, game.players[id]!.level])),
+          players: Object.fromEntries(
+            allPlayerIds.map(id => [id, game.players[id]!.level]).sort((a, b) => (a[1]! < b[1]! ? 1 : -1)),
+          ),
         })
       } else {
         nextTurn(game)

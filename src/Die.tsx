@@ -67,7 +67,7 @@ const useMultiRotateWithTilt = (rotate: number, tiltOffset: number, onlyTilt: bo
 type DieProps = {
   which: Logic.WhichDie
   faces: [Logic.DieFace, Logic.DieFace, Logic.DieFace, Logic.DieFace, Logic.DieFace, Logic.DieFace]
-  onRollEnd: () => void
+  onRollEnd: (rolledNum: Logic.DieFaceNum) => void
 }
 
 const generateDie = () => {
@@ -135,7 +135,7 @@ const generateDie = () => {
 
             if (e.propertyName === 'transform') {
               setDieResting(true)
-              onRollEnd()
+              onRollEnd(rolledNum!)
             }
           }}
         >

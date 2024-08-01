@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from 'react'
 
 import { DIE_ROLL_DURATION_MS, WAIT_AFTER_FIRST_PLAYER_DECIDED } from './animations.consts.ts'
-import { aboveTheTreetopsSound, clickSound } from './audio.ts'
+import { aboveTheTreetopsSound, clickSound, levelUpSound } from './audio.ts'
 import { useDiceRollModal } from './DiceRollModal.tsx'
 import { GameStateContext } from './GameState.context.tsx'
 import { useElectState } from './hooks.ts'
@@ -63,7 +63,11 @@ function RollToDecideWhoGoesFirstScreen() {
           <button
             onClick={async () => {
               clickSound.play()
-              await MyDiceRollModal.waitForRoll()
+              const rolls = await MyDiceRollModal.waitForRoll()
+              const score = rolls.reduce((a, b) => a + b, 0)
+              if (score) {
+                levelUpSound.play()
+              }
             }}
           >
             <img src={dieIconImage} className={`w-20 ${myDecidingRoll ? 'animate-spin' : 'animate-bounce'}`} />

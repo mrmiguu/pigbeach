@@ -51,6 +51,8 @@ declare global {
   const Dusk: DuskClient<GameState, GameActions>
 }
 
+const WIN_LEVEL = 120
+
 const StartingDie: Die = [M1, M2, M3, M4, M5, M6]
 export const StartingDice: [Die] = [StartingDie]
 
@@ -110,6 +112,10 @@ const checkLevelUp = (game: GameState, playerId: PlayerId) => {
   player.level += additionalLevels
 }
 
+const isGameOver = (game: GameState) => {
+  return Object.values(game.players).some(p => p.level >= WIN_LEVEL)
+}
+
 Dusk.initLogic({
   minPlayers: 1,
   maxPlayers: 4,
@@ -145,10 +151,17 @@ Dusk.initLogic({
       }
     },
 
-    endTurn(_, { game, playerId }) {
+    endTurn(_, { game, playerId, allPlayerIds }) {
       checkLevelUp(game, playerId)
       wipeRollBuffer(game, playerId)
-      nextTurn(game)
+
+      if (isGameOver(game)) {
+        Dusk.gameOver({
+          players: Object.fromEntries(allPlayerIds.map(id => [id, game.players[id]!.level])),
+        })
+      } else {
+        nextTurn(game)
+      }
     },
   },
 

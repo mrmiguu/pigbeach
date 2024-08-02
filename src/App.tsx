@@ -7,7 +7,7 @@ import * as Logic from './logic.ts'
 import { usePlayMusic } from './Music.hooks.ts'
 
 import dieIconImage from './assets/die-icon.png'
-import pigBeachBgImage from './assets/pig-beach-bg.png'
+import pigBeachBgImage from './assets/pig-beach-bg.jpg'
 
 function RollToDecideWhoGoesFirstScreen() {
   const { game, yourPlayerId } = useContext(GameStateContext)

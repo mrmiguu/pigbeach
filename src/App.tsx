@@ -1,13 +1,13 @@
-import { useContext } from 'react'
+import { useContext, useEffect } from 'react'
 
-import { aboveTheTreetopsSound, clickSound, levelUpSound } from './audio.ts'
+import { aboveTheTreetopsSound, clickSound, levelUpSound, loseSound, winSound } from './audio.ts'
 import { useDiceRollModal } from './DiceRollModal.tsx'
 import { GameStateContext } from './GameState.context.tsx'
 import * as Logic from './logic.ts'
+import { usePlayMusic } from './Music.hooks.ts'
 
 import dieIconImage from './assets/die-icon.png'
 import pigBeachBgImage from './assets/pig-beach-bg.png'
-import { usePlayMusic } from './Music.hooks.ts'
 
 function RollToDecideWhoGoesFirstScreen() {
   const { game, yourPlayerId } = useContext(GameStateContext)
@@ -19,6 +19,21 @@ function RollToDecideWhoGoesFirstScreen() {
 
   const decidingRoll = !game.whoseTurn
   const myTurn = game.whoseTurn === yourPlayerId
+
+  const gameOver = Logic.isGameOver(game)
+  useEffect(() => {
+    if (gameOver) {
+      const winners = Logic.getLeaderboard(game)
+
+      const winner = winners[0]!
+      if (winner.id === yourPlayerId) {
+        winSound.play()
+      } else {
+        loseSound.play()
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gameOver])
 
   return (
     <div className="absolute w-full h-full flex flex-col">
@@ -97,18 +112,6 @@ function RollToDecideWhoGoesFirstScreen() {
 
 function App() {
   usePlayMusic(aboveTheTreetopsSound)
-  // const { game, yourPlayerId } = useContext(GameStateContext)
-  // const { whoseTurn: whoseTurnElect } = game
-
-  // const whoseTurn = useElectState(whoseTurnElect, DIE_ROLL_DURATION_MS + WAIT_AFTER_FIRST_PLAYER_DECIDED)
-
-  // useEffect(() => {
-  //   if (whoseTurnElect && whoseTurn === yourPlayerId) {
-  //     Logic.actions.startGame()
-  //   }
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [whoseTurnElect, whoseTurn])
-
   return <RollToDecideWhoGoesFirstScreen />
 }
 

@@ -1,4 +1,4 @@
-import { useContext, useEffect } from 'react'
+import { useContext, useEffect, useState } from 'react'
 
 import { aboveTheTreetopsSound, clickSound, levelUpSound, loseSound, winSound } from './audio.ts'
 import { useDiceRollModal } from './DiceRollModal.tsx'
@@ -6,6 +6,7 @@ import { GameStateContext } from './GameState.context.tsx'
 import * as Logic from './logic.ts'
 import { usePlayMusic } from './Music.hooks.ts'
 
+import toast from 'react-hot-toast'
 import dieIconImage from './assets/die-icon.png'
 import pigBeachBgImage from './assets/pig-beach-bg.jpg'
 
@@ -34,6 +35,15 @@ function RollToDecideWhoGoesFirstScreen() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gameOver])
+
+  const infoTexts = [
+    'The first to roll their die goes first.',
+    'If you roll a 1, you lose all of your accumulated points and your turn ends.',
+    'If you roll anything else, you can continue to roll or hold and end your turn.',
+    'Holding and ending your turn adds your accumulated points to your level.',
+    `The first player to reach level ${Logic.WIN_LEVEL} wins!`,
+  ]
+  const [infoTextIndex, setInfoTextIndex] = useState(0)
 
   return (
     <div className="absolute w-full h-full flex flex-col">
@@ -72,6 +82,19 @@ function RollToDecideWhoGoesFirstScreen() {
               src={dieIconImage}
               className={`w-20 ${!decidingRoll && !myTurn ? 'animate-spin' : 'animate-bounce'}`}
             />
+          </button>
+        </div>
+
+        <div className="absolute w-full h-full left-0 top-0 flex justify-end items-end px-4 pointer-events-none">
+          <button
+            className="w-8 h-8 font-mono flex justify-center items-center text-white bg-white/20 backdrop-blur rounded-full pointer-events-auto"
+            onClick={() => {
+              clickSound.play()
+              toast(infoTexts[infoTextIndex]!)
+              setInfoTextIndex((infoTextIndex + 1) % infoTexts.length)
+            }}
+          >
+            ?
           </button>
         </div>
       </div>

@@ -51,7 +51,7 @@ declare global {
   const Dusk: DuskClient<GameState, GameActions>
 }
 
-const WIN_LEVEL = 2
+export const WIN_LEVEL = 120
 
 const StartingDie: Die = [M1, M2, M3, M4, M5, M6]
 export const StartingDice: [Die] = [StartingDie]
